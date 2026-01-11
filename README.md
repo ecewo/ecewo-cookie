@@ -23,7 +23,7 @@ FetchContent_Declare(
 
 FetchContent_MakeAvailable(ecewo)
 
-ecewo_add_plugin(cookie)
+ecewo_plugin(cookie)
 
 add_executable(app
   src/main.c

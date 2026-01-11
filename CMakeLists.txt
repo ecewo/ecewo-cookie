@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.16)
+cmake_minimum_required(VERSION 3.14)
 project(ecewo_cookie VERSION 0.1.0 LANGUAGES C)
 
 add_library(ecewo_cookie
@@ -26,49 +26,41 @@ endif()
 
 target_link_libraries(ecewo_cookie PUBLIC ecewo::ecewo)
 
-target_compile_definitions(ecewo_cookie PRIVATE _GNU_SOURCE)
-
 if (PROJECT_IS_TOP_LEVEL AND TARGET ecewo::ecewo)
+  ecewo_plugin(mock)
+  enable_testing()
 
-  ecewo_add_plugin(mock)
+  add_executable(ecewo_cookie_test
+    tests/test.c
+    tests/runner.c
+  )
 
-  option(ECEWO_COOKIE_BUILD_TESTS "Build tests" ON)
+  target_include_directories(ecewo_cookie_test
+    PRIVATE
+      ${CMAKE_CURRENT_SOURCE_DIR}/src
+      ${CMAKE_CURRENT_SOURCE_DIR}/tests
+  )
 
-  if (ECEWO_COOKIE_BUILD_TESTS)
-    enable_testing()
+  target_link_libraries(ecewo_cookie_test
+    PRIVATE
+      ecewo::ecewo
+      ecewo::cookie
+      ecewo::mock
+  )
 
-    add_executable(ecewo_cookie_test
-      tests/test.c
-      tests/runner.c
-    )
-
-    target_include_directories(ecewo_cookie_test
-      PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        ${CMAKE_CURRENT_SOURCE_DIR}/tests
-    )
-
-    target_link_libraries(ecewo_cookie_test
-      PRIVATE
-        ecewo::ecewo
-        ecewo::cookie
-        ecewo::mock
-    )
-
-    if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
-      target_compile_options(ecewo_cookie_test PRIVATE
-        -Wall
-        -Wextra
-        -Werror
-        -Wstrict-prototypes
-        -Wincompatible-pointer-types
-        -Wno-unused-parameter
-      )
-    endif()
-
-    add_test(
-      NAME ecewo_cookie_all
-      COMMAND ecewo_cookie_test
+  if (CMAKE_C_COMPILER_ID MATCHES "GNU|Clang")
+    target_compile_options(ecewo_cookie_test PRIVATE
+      -Wall
+      -Wextra
+      -Werror
+      -Wstrict-prototypes
+      -Wincompatible-pointer-types
+      -Wno-unused-parameter
     )
   endif()
+
+  add_test(
+    NAME ecewo_cookie_all
+    COMMAND ecewo_cookie_test
+  )
 endif()
