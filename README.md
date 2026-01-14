@@ -9,25 +9,10 @@
 
 ## Installation
 
-```shell
-cmake_minimum_required(VERSION 3.14)
-project(app LANGUAGES C)
+Add to your `CMakeLists.txt`:
 
-include(FetchContent)
-
-FetchContent_Declare(
-  ecewo
-  GIT_REPOSITORY https://github.com/savashn/ecewo.git
-  GIT_TAG v3.1.0
-)
-
-FetchContent_MakeAvailable(ecewo)
-
+```sh
 ecewo_plugin(cookie)
-
-add_executable(app
-  src/main.c
-)
 
 target_link_libraries(app PRIVATE
     ecewo::ecewo
