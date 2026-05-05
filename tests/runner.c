@@ -1,13 +1,16 @@
+#include "ecewo.h"
 #include "ecewo-mock.h"
-#include "tests.h"
 #include "tester.h"
+#include "tests.h"
 
-void setup_all_routes(void) {
-  get("/set-simple", handler_set_simple_cookie);
-  get("/set-complex", handler_set_complex_cookie);
-  get("/get-cookie", handler_get_cookie);
-  get("/delete-cookie", handler_delete_cookie);
-  get("/utf8-cookie", handler_utf8_cookie);
+#include <stdio.h>
+
+static void setup_all_routes(ecewo_app_t *app) {
+  ECEWO_GET(app, "/set-simple", handler_set_simple_cookie);
+  ECEWO_GET(app, "/set-complex", handler_set_complex_cookie);
+  ECEWO_GET(app, "/get-cookie", handler_get_cookie);
+  ECEWO_GET(app, "/delete-cookie", handler_delete_cookie);
+  ECEWO_GET(app, "/utf8-cookie", handler_utf8_cookie);
 }
 
 int main(void) {

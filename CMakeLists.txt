@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.14)
-project(ecewo_cookie VERSION 0.1.0 LANGUAGES C)
+project(ecewo_cookie VERSION 0.3.0 LANGUAGES C)
 
 add_library(ecewo_cookie
   src/ecewo-cookie.c
@@ -7,8 +7,16 @@ add_library(ecewo_cookie
 
 add_library(ecewo::cookie ALIAS ecewo_cookie)
 
+include(GenerateExportHeader)
+generate_export_header(ecewo_cookie
+  BASE_NAME ECEWO_COOKIE
+  EXPORT_FILE_NAME "${CMAKE_CURRENT_BINARY_DIR}/include/ecewo-cookie-export.h"
+)
+
 target_include_directories(ecewo_cookie PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/src>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_BINARY_DIR}/include>
+  $<INSTALL_INTERFACE:include>
 )
 
 if (PROJECT_IS_TOP_LEVEL AND NOT TARGET ecewo::ecewo)
@@ -16,16 +24,16 @@ if (PROJECT_IS_TOP_LEVEL AND NOT TARGET ecewo::ecewo)
 
   FetchContent_Declare(
     ecewo
-    GIT_REPOSITORY https://github.com/savashn/ecewo.git
-    GIT_TAG        v3.1.0
-    GIT_SHALLOW    TRUE
+    GIT_REPOSITORY https://github.com/ecewo/ecewo.git
+    GIT_TAG v4
+    GIT_SHALLOW TRUE
   )
 
   FetchContent_MakeAvailable(ecewo)
 endif()
 
 if (PROJECT_IS_TOP_LEVEL AND TARGET ecewo::ecewo)
-  ecewo_plugin(mock)
+  ecewo_add(mock@dev)
   enable_testing()
 
   add_executable(ecewo_cookie_test

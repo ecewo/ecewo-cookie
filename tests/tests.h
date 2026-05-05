@@ -3,11 +3,11 @@
 
 #include "ecewo.h"
 
-void handler_set_simple_cookie(Req *req, Res *res);
-void handler_set_complex_cookie(Req *req, Res *res);
-void handler_get_cookie(Req *req, Res *res);
-void handler_delete_cookie(Req *req, Res *res);
-void handler_utf8_cookie(Req *req, Res *res);
+void handler_set_simple_cookie(ecewo_request_t *req, ecewo_response_t *res);
+void handler_set_complex_cookie(ecewo_request_t *req, ecewo_response_t *res);
+void handler_get_cookie(ecewo_request_t *req, ecewo_response_t *res);
+void handler_delete_cookie(ecewo_request_t *req, ecewo_response_t *res);
+void handler_utf8_cookie(ecewo_request_t *req, ecewo_response_t *res);
 
 int test_cookie_set_simple(void);
 int test_cookie_set_complex(void);

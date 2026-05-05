@@ -1,51 +1,57 @@
-#include "ecewo-mock.h"
 #include "ecewo-cookie.h"
+#include "ecewo-mock.h"
 #include "tester.h"
+#include "tests.h"
+
 #include <string.h>
 
-// HANDLERS
-void handler_set_simple_cookie(Req *req, Res *res) {
-  cookie_set(res, "theme", "dark", NULL);
-  send_text(res, 200, "Cookie set");
+void handler_set_simple_cookie(ecewo_request_t *req, ecewo_response_t *res) {
+  (void)req;
+  ecewo_cookie_set(res, "theme", "dark", NULL);
+  ecewo_send_text(res, ECEWO_OK, "Cookie set");
 }
 
-void handler_set_complex_cookie(Req *req, Res *res) {
-  Cookie opts = {
-    .max_age = 3600,
-    .path = "/",
-    .same_site = "Strict",
-    .http_only = true,
-    .secure = false
-  };
+void handler_set_complex_cookie(ecewo_request_t *req, ecewo_response_t *res) {
+  (void)req;
+  ecewo_cookie_options_t *opts = ecewo_cookie_options_new();
+  ecewo_cookie_options_set_max_age(opts, 3600);
+  ecewo_cookie_options_set_path(opts, "/");
+  ecewo_cookie_options_set_same_site(opts, ECEWO_COOKIE_SAMESITE_STRICT);
+  ecewo_cookie_options_set_http_only(opts, true);
+  ecewo_cookie_options_set_secure(opts, false);
 
-  cookie_set(res, "session_id", "abc123", &opts);
-  send_text(res, 200, "Complex cookie set");
+  ecewo_cookie_set(res, "session_id", "abc123", opts);
+  ecewo_cookie_options_free(opts);
+
+  ecewo_send_text(res, ECEWO_OK, "Complex cookie set");
 }
 
-void handler_get_cookie(Req *req, Res *res) {
-  char *value = cookie_get(req, "user");
+void handler_get_cookie(ecewo_request_t *req, ecewo_response_t *res) {
+  const char *value = ecewo_cookie_get(req, "user");
   if (value) {
-    send_text(res, 200, value);
+    ecewo_send_text(res, ECEWO_OK, value);
   } else {
-    send_text(res, 404, "Cookie not found");
+    ecewo_send_text(res, ECEWO_NOT_FOUND, "Cookie not found");
   }
 }
 
-void handler_delete_cookie(Req *req, Res *res) {
-  Cookie opts = {
-    .max_age = 0
-  };
+void handler_delete_cookie(ecewo_request_t *req, ecewo_response_t *res) {
+  (void)req;
+  ecewo_cookie_options_t *opts = ecewo_cookie_options_new();
+  ecewo_cookie_options_set_max_age(opts, 0);
 
-  cookie_set(res, "session_id", "", &opts);
-  send_text(res, 200, "Cookie deleted");
+  ecewo_cookie_set(res, "session_id", "", opts);
+  ecewo_cookie_options_free(opts);
+
+  ecewo_send_text(res, ECEWO_OK, "Cookie deleted");
 }
 
-void handler_utf8_cookie(Req *req, Res *res) {
-  cookie_set(res, "greeting", "merhaba dünya", NULL);
-  send_text(res, 200, "UTF-8 cookie set");
+void handler_utf8_cookie(ecewo_request_t *req, ecewo_response_t *res) {
+  (void)req;
+  ecewo_cookie_set(res, "greeting", "merhaba dünya", NULL);
+  ecewo_send_text(res, ECEWO_OK, "UTF-8 cookie set");
 }
 
-// TESTS
 int test_cookie_set_simple(void) {
   MockParams params = {
     .method = MOCK_GET,
@@ -59,6 +65,11 @@ int test_cookie_set_simple(void) {
 
   ASSERT_EQ(200, res.status_code);
   ASSERT_EQ_STR("Cookie set", res.body);
+
+  const char *set_cookie = mock_get_header(&res, "Set-Cookie");
+  ASSERT_NOT_NULL(set_cookie);
+  ASSERT_NOT_NULL(strstr(set_cookie, "theme=dark"));
+  ASSERT_NOT_NULL(strstr(set_cookie, "Path=/"));
 
   free_request(&res);
   RETURN_OK();
@@ -77,6 +88,14 @@ int test_cookie_set_complex(void) {
 
   ASSERT_EQ(200, res.status_code);
   ASSERT_EQ_STR("Complex cookie set", res.body);
+
+  const char *set_cookie = mock_get_header(&res, "Set-Cookie");
+  ASSERT_NOT_NULL(set_cookie);
+  ASSERT_NOT_NULL(strstr(set_cookie, "session_id=abc123"));
+  ASSERT_NOT_NULL(strstr(set_cookie, "Max-Age=3600"));
+  ASSERT_NOT_NULL(strstr(set_cookie, "Expires="));
+  ASSERT_NOT_NULL(strstr(set_cookie, "SameSite=Strict"));
+  ASSERT_NOT_NULL(strstr(set_cookie, "HttpOnly"));
 
   free_request(&res);
   RETURN_OK();
@@ -157,6 +176,10 @@ int test_cookie_delete(void) {
 
   ASSERT_EQ(200, res.status_code);
   ASSERT_EQ_STR("Cookie deleted", res.body);
+
+  const char *set_cookie = mock_get_header(&res, "Set-Cookie");
+  ASSERT_NOT_NULL(set_cookie);
+  ASSERT_NOT_NULL(strstr(set_cookie, "Max-Age=0"));
 
   free_request(&res);
   RETURN_OK();
