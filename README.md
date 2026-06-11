@@ -15,7 +15,7 @@ A Cookie plugin for [ecewo](https://github.com/ecewo/ecewo) v4.
 Add to your `CMakeLists.txt`:
 
 ```cmake
-ecewo_add(cookie)
+ecewo_add(cookie@v0.2.0)
 
 target_link_libraries(app PRIVATE
   ecewo::ecewo
